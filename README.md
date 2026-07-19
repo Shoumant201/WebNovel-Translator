@@ -1,120 +1,111 @@
-# Webnovel Translator
+# WebNovel Translator 📖 🌐
 
-A Flutter app for reading translated webnovels: paste a chapter link, it
-fetches the raw text, translates it with your choice of translation providers, and can keep
-auto-fetching subsequent chapters as they're published. Each novel builds
-up its own "context" (a lightweight name/terminology glossary) automatically
-as chapters are translated.
+[![Flutter CI](https://github.com/Shoumant/webnovel_translator/actions/workflows/flutter_ci.yml/badge.svg)](https://github.com/Shoumant/webnovel_translator/actions/workflows/flutter_ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Flutter Version](https://img.shields.io/badge/Flutter-Stable-blue.svg)](https://flutter.dev)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-## Features
+Translate web novels from popular Chinese and English websites directly into your native language while preserving all original HTML layouts and chapter formatting. 
 
-- 📚 **Multi-site support**: Works with RoyalRoad, ScribbleHub, WuxiaWorld, WebNovel.com, 69shuba, and more
-- 🔄 **Auto-fetch**: Automatically fetches subsequent chapters as they're published
-- 🌐 **Multiple translation providers**: Microsoft Translator, Google Translate, DeepL, and LibreTranslate with smart fallback
-- 📝 **Context building**: Maintains character names and terminology across chapters
-- 🔧 **Manual extraction**: WebView-based fallback for sites with anti-bot protection
-- 💾 **Offline reading**: All chapters stored locally in SQLite
-- ⚙️ **Easy configuration**: Simple settings UI to manage translation API keys
+WebNovel Translator is a cross-platform (Android, iOS, desktop) app built with Flutter. It utilizes multiple AI translation providers with automatic failover, local SQLite storage for offline reading, a WebView-based manual extractor to bypass anti-bot protections, and a smart, localized glossary context builder.
 
-## Translation Providers
+---
 
-The app supports multiple translation services with automatic fallback:
+## ⚡ Key Features
 
-| Provider | Free Tier | Setup Time | Best For |
-|----------|-----------|------------|----------|
-| **Microsoft Translator** | 2M chars/month | 10 min | Most generous (recommended) |
-| **Google Translate** | 500K chars/month | 15 min | Wide language support |
-| **DeepL** | 500K chars/month | 5 min | Highest quality |
-| **LibreTranslate** | Unlimited* | 0 min | No configuration needed |
+- **🌍 Smart Formatting Preservation**: Automatically translates chapter content paragraph by paragraph, keeping the original HTML styling (like colors, bolding, line breaks) intact.
+- **🔄 Multi-Provider Translation**: Connects to **Microsoft Translator**, **Google Translate**, **DeepL API**, and **LibreTranslate** with smart automatic fallback if one fails or hits a rate limit.
+- **📝 Automated Context Builder**: Automatically identifies repeated terminology and character names across chapters to build a local dictionary. It then applies these consistent mappings during future translations.
+- **🔧 Manual WebView Extractor**: Built-in browser interface that allows you to bypass strict Cloudflare/anti-bot protection by loading chapters via browser engine, then extracting and parsing content instantly.
+- **💾 Offline Reading**: Fully offline-first design. All translated chapters, novel lists, and glossary data are cached locally using Drift (SQLite).
+- **🚀 Cross-Platform Support**: Ready to compile for Linux, macOS, Windows, Android, and iOS.
 
-*Public instances may have rate limits
+---
 
-**Total potential**: 3M+ characters/month = 600-1000 chapters/month!
+## 📸 Main Interface
 
-Configure providers in Settings (gear icon) for best results. See [MULTI_PROVIDER_TRANSLATION_SETUP.md](docs/MULTI_PROVIDER_TRANSLATION_SETUP.md) for detailed setup.
+| Novels Library | Chapter Reader | Setup Settings |
+|:---:|:---:|:---:|
+| _[Add Novel card screenshot]_ | _[Translated HTML layout screenshot]_ | _[API Key configurations screenshot]_ |
 
-## Manual Extraction Feature
+*Note: Pinned screenshots will be updated soon. Add a screenshot or demo GIF here in your repository settings!*
 
-When automatic fetching fails (e.g., HTTP 403 errors, JavaScript-rendered content, CAPTCHA), use the **Manual Extract** feature:
+---
 
-1. Click the web icon on failed chapters
-2. Navigate to the chapter in the built-in browser
-3. Click "Extract Chapter" button
-4. Content is automatically parsed and translated
+## 🚀 Quick Start (Under 2 Minutes)
 
-Perfect for sites like 69shuba with strong anti-bot protection. See [MANUAL_EXTRACT_FEATURE.md](docs/MANUAL_EXTRACT_FEATURE.md) for details.
+To run the application locally in development mode:
 
-## Architecture
+### 1. Prerequisites
+Make sure you have [Flutter SDK](https://flutter.dev/docs/get-started/install) installed on your system.
 
-```
-lib/
-  models/enums.dart              ChapterStatus, FetchStrategy
-  data/database.dart             Drift schema: Novels, Chapters, AppSettings
-  services/
-    chapter_fetch_service.dart   HTTP fetch + delegates to a parser
-    scrapers/                    One parser per site + generic fallback
-    translation_service.dart     LibreTranslate client (multi-endpoint fallback, chunking)
-    context_builder_service.dart Heuristic glossary/context builder
-  repositories/novel_repository.dart   Orchestrates fetch -> translate -> context -> auto-next
-  providers.dart                 Riverpod wiring
-  ui/screens, ui/widgets         Library, novel detail, reader
-```
-
-The repository layer (`NovelRepository`) is the only place that knows about
-the full pipeline; everything else is a narrow, swappable piece. That's
-deliberate — you can add a new site parser, swap LibreTranslate for another
-engine, or later add cloud sync, without touching the others.
-
-## First-time setup
-
-This project uses [Drift](https://drift.simonbinder.eu/) for local storage,
-which needs a one-time code-generation step.
-
+### 2. Setup & Install
+Clone the repository and install the dependencies:
 ```bash
+git clone https://github.com/Shoumant/webnovel_translator.git
+cd webnovel_translator
 flutter pub get
+```
+
+### 3. Generate Database Classes
+Generate local SQLite mapping schemas using `build_runner`:
+```bash
 dart run build_runner build --delete-conflicting-outputs
+```
+
+### 4. Run the App
+Launch the app on your connected device or desktop emulator:
+```bash
 flutter run
 ```
 
-That generates `lib/data/database.g.dart` (not checked in). Re-run
-`build_runner` any time you change `database.dart`.
+---
 
-## Translation backend (LibreTranslate)
+## ⚙️ Supported Sites
 
-By default the app tries, in order:
-1. A custom endpoint you configure (e.g. your own self-hosted instance)
-2. `https://libretranslate.de`
-3. `https://translate.terraprint.co`
-4. `https://libretranslate.com`
+The app features modular parsing strategies. It automatically detects and processes the page layouts of:
+*   **RoyalRoad** (`royalroad.com`)
+*   **ScribbleHub** (`scribblehub.com`)
+*   **WuxiaWorld** (`wuxiaworld.com`)
+*   **WebNovel.com** (`webnovel.com`)
+*   **69shuba** (`69shuba.com` / `69shu.com`) - *Requires WebView manual extraction*
+*   **Generic Fallback**: High-performance link density heuristic parses novel contents on unsupported/new websites automatically.
 
-Public instances are free but rate-limited and occasionally down. For
-serious/sustained use, self-host LibreTranslate (a single Docker command)
-and set it as the custom endpoint:
+For custom scraping setups, see [Adding support for another site](docs/PARSER_IMPROVEMENTS.md).
 
-```bash
-docker run -ti -p 5000:5000 libretranslate/libretranslate
-```
+---
 
-Then point the app at `http://<your-host>:5000` — wire this through
-`TranslationService.customEndpoint` (a Settings screen to edit this from the
-UI is a natural next addition; the field already exists on the service).
+## 🤖 Translation Providers
 
-## Adding support for another site
+Configure the API keys for the services you want to use in the settings gear icon. If one fails, the pipeline fails-over to the next active provider:
 
-Implement `ChapterParser` (see `lib/services/scrapers/royalroad_parser.dart`
-for a template), then register it in `ChapterFetchService._parsers`. Put more
-specific parsers before the generic fallback — order matters.
+| Provider | Free Monthly Tier | Best For | Setup Guide |
+|---|---|---|---|
+| **Microsoft Translator** | 2,000,000 chars | High volume / Great default | [Setup Guide](docs/MULTI_PROVIDER_TRANSLATION_SETUP.md) |
+| **Google Translate** | 500,000 chars | Wide language coverage | [Setup Guide](docs/MULTI_PROVIDER_TRANSLATION_SETUP.md) |
+| **DeepL Translate** | 500,000 chars | Highest semantic quality | [Setup Guide](docs/MULTI_PROVIDER_TRANSLATION_SETUP.md) |
+| **LibreTranslate** | Unlimited (Self-hosted) | No API key / Free self-hosting | [Setup Guide](docs/MULTI_PROVIDER_TRANSLATION_SETUP.md) |
 
-## Known limitations / next steps
+---
 
-- Sites that render chapter text via client-side JS (rather than in the
-  initial HTML) won't work with the current HTTP-based fetcher — a headless
-  browser/webview fetch would be needed for those.
-- The "context" glossary is heuristic (repeated capitalized phrases), not
-  LLM-based, to keep the whole pipeline on free APIs. It's meant to keep
-  naming visibly consistent chapter-to-chapter, not to be a literary summary.
-- Local-only storage now (SQLite via Drift); the repository/database split
-  was kept clean specifically so a cloud-sync layer can be added later
-  without reworking the fetch/translate pipeline.
-- No authentication/paywall handling — works only for chapters that are
-  freely readable without login.
+## 🗺️ Project Roadmap
+
+- [ ] **EPUB & PDF Export**: Export translated novels directly to readable ebook formats.
+- [ ] **Google Drive Backup**: Sync local SQLite databases and glossaries across multiple devices.
+- [ ] **AI-driven Context Translation**: Upgrade the glossary builder to use local LLM API integration.
+- [ ] **OCR Chapter Translation**: Translate scan/image-based chapters using local OCR.
+- [ ] **Dark Mode custom styling**: Configurable reader backgrounds, line-heights, and fonts.
+
+---
+
+## 🤝 Contributing
+
+We love contributions! Whether it is adding a new scraper strategy, writing translation provider classes, or fixing UI bugs:
+1. Review the [Code of Conduct](CODE_OF_CONDUCT.md).
+2. Check out the [Contributing Guidelines](CONTRIBUTING.md) for how to set up your branch and submit pull requests.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
